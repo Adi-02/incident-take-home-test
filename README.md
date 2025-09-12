@@ -2,13 +2,10 @@
 
 [job-ad]: https://jobs.ashbyhq.com/incident/c6436752-7f35-4936-9cbd-f372f55e4823
 
-incident.io has an internship programme for student engineers who want to gain
-work experience over a 3-6 month placement.
+incident.io offers internships, placements, and graduate programmes for student engineers, 
+providing opportunities to gain experience through 3-month, 6-month, 1-year placements, or by joining as a full-time graduate.
 
 You can apply [here][job-ad] or read about the role below.
-
-> [!CAUTION]
-> Applications are now closed. Will re-open again for Spring 2026 placements around October 2026.
 
 ## What is the role?
 
@@ -81,6 +78,12 @@ An ideal project would:
 We'll only accept submissions where you are the primary contributor to the
 project: group projects are great but become extremely difficult to evaluate
 fairly!
+
+Please also attach a (maximum) 5-minute Loom explaining:
+1. Overview of your solution
+2. Key technical decisions
+3. Trade-offs & alternatives
+4. Final reflection (what did you find challenging/interesting/tricky?)
 
 ## 2. Complete our take-home challenge
 
@@ -199,7 +202,7 @@ outside the provided range).
 
 Entries should be truncated to match the from/until parameters.
 
-### Code submission
+### Code submission and video explanation
 
 Once we've reviewed your CV, we'll send you instructions on where to send your
 solution. We'll expect a ZIP file containing the code, plus a `README.md` that
@@ -211,3 +214,9 @@ includes:
 - Having now built the scheduler, any thoughts you have on the product features
   you might build on top of this (if you think how we'd use this at incident.io,
   for example).
+
+Please also attach a (maximum) 5-minute Loom explaining:
+1. Overview of your solution
+2. Key technical decisions
+3. Trade-offs & alternatives
+4. Final reflection (what did you find challenging/interesting/tricky?)
