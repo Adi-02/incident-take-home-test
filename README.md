@@ -1,6 +1,6 @@
 # Internships, Placements and Graduate Take Home Assessment
 
-[job-ad]: https://jobs.ashbyhq.com/incident/c6436752-7f35-4936-9cbd-f372f55e4823
+[job-ad]: https://incident.io/careers#open-roles
 
 We're on a mission to build the single place you turn to when things go wrong. Over the past year, we’ve also built some of the most ambitious AI-native features in our space. From ways to make incident response smoother, to AI agents that investigate, explain, and even fix issues, we’re reimagining what incident management can be.
 
