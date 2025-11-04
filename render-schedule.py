@@ -4,7 +4,6 @@ from scheduling_engine import SchedulingEngine
 from datetime import datetime
 
 def read_stdin():
-
     # Parse input arguments
     parser = argparse.ArgumentParser(description="Render schedule with overrides")
     parser.add_argument("--schedule", required=True)
