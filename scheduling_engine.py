@@ -1,4 +1,5 @@
 from user_event import UserEvent
+
 class SchedulingEngine:
     def __init__(self, schedule_lst, override_lst, schedule_start, schedule_end):
         self.schedule_lst = schedule_lst
@@ -7,95 +8,134 @@ class SchedulingEngine:
         self.schedule_end = schedule_end
         self.final_schedule = []
 
+    def _truncate_event(self, event):
+        """
+        Truncate an event's start and end time within the time frame given
+        """
+        event.start_time = max(event.start_time, self.schedule_start)
+        event.end_time = min(event.end_time, self.schedule_end)
 
-    def _truncate_events(self, events_lst):
-        for event in events_lst:
-            if event.start_time < self.schedule_start:
-                event.start_time = self.schedule_start
-            if event.end_time > self.schedule_end:
-                event.end_time = self.schedule_end
+    def _truncate_events(self, events):
+        """
+        Truncate all events within time frame
+        """
+        for event in events:
+            self._truncate_event(event)
 
-    def override_schedule_queue(self):
-        # Truncate Schedule Time 
-        self._truncate_events(self.schedule_lst)
-        
-        # Truncate Override Time 
-        self._truncate_events(self.override_lst)
+    def _append_if_valid(self, event_list, event):
+        """
+        Ignore events if they have the same start and end time
+        """
+        if event.start_time < event.end_time:
+            event_list.append(event)
 
-        p1, p2 = 0, 0
-
-        # All the overrides before the main schedule starts
-        while p2 < len(self.override_lst) and self.override_lst[p2].end_time <= self.schedule_lst[0].start_time:
-            self.final_schedule.append(self.override_lst[p2])
+    def _handle_pre_schedule_overrides(self, final):
+        """
+        Add override tasks that start before the first scheduled task 
+        """
+        p2 = 0
+        schedules, overrides = self.schedule_lst, self.override_lst
+        while p2 < len(overrides) and overrides[p2].end_time <= schedules[0].start_time:
+            self._append_if_valid(final, overrides[p2])
             p2 += 1
+        return p2
 
-        # End_time of p2 must overlap (inbetween p1.start_time and p1.end_time) -> truncate
-        if p2 < len(self.override_lst) and self.override_lst[p2].start_time < self.schedule_lst[0].start_time:
-            initial_o = UserEvent(self.override_lst[p2].name, self.override_lst[p2].start_time, self.schedule_lst[0].start_time)
-            self.final_schedule.append(initial_o)
-            self.override_lst[p2].start_time = self.schedule_lst[0].start_time
-        
-        while p1 < len(self.schedule_lst) and p2 < len(self.override_lst):
-            s_start, s_end = self.schedule_lst[p1].start_time, self.schedule_lst[p1].end_time
-            o_start, o_end = self.override_lst[p2].start_time, self.override_lst[p2].end_time
-            s_name = self.schedule_lst[p1].name
-            o_event = self.override_lst[p2]
+    def _handle_partial_overlap_before_first_schedule(self, final, p2):
+        """
+        Handle an override that partially overlaps before the first scheduled task
+        """
+        schedules, overrides = self.schedule_lst, self.override_lst
+        if p2 < len(overrides) and overrides[p2].start_time < schedules[0].start_time:
+            o = overrides[p2]
+            self._append_if_valid(final, UserEvent(o.name, o.start_time, schedules[0].start_time))
+            o.start_time = schedules[0].start_time
+        return p2
+
+    def _merge_main_schedule(self, final, p1, p2):
+        """
+        Merging schedules and overrides if and when they overlap
+        """
+        schedules, overrides = self.schedule_lst, self.override_lst
+
+        while p1 < len(schedules) and p2 < len(overrides):
+            s, o = schedules[p1], overrides[p2]
+            s_start, s_end = s.start_time, s.end_time
+            o_start, o_end = o.start_time, o.end_time
+
+            # Skip empty events
             if s_start == s_end:
                 p1 += 1
-                continue 
+                continue
             if o_start == o_end:
                 p2 += 1
                 continue
 
-            # Case 1: Inside one schedule
+            # Case 1: Override fully inside schedule
             if s_start <= o_start < o_end <= s_end:
-                if s_start < o_start:
-                    before_schedule = UserEvent(s_name, s_start, o_start)
-                    self.final_schedule.append(before_schedule)
-                self.final_schedule.append(o_event)
-                p2 += 1 # Override event fully consumed
-                if o_end < s_end:
-                    after_schedule = UserEvent(s_name, o_end, s_end)
-                    self.final_schedule.append(after_schedule)
+                self._append_if_valid(final, UserEvent(s.name, s_start, o_start))  # before
+                self._append_if_valid(final, o)                                   # override
+                self._append_if_valid(final, UserEvent(s.name, o_end, s_end))     # after
                 p1 += 1
-            else: # Case 2: Between two schedules
-                if s_start < o_start:
-                    before_schedule = UserEvent(s_name, s_start, o_start)
-                    self.final_schedule.append(before_schedule)
-                p1 += 1 # Current schedule has been consumed
-                partial_o = UserEvent(o_event.name, o_start, s_end)
-                self.final_schedule.append(partial_o)
-                o_event.start_time = s_end 
+                p2 += 1
+            else:
+                # Case 2: Override spans multiple schedules
+                self._append_if_valid(final, UserEvent(s.name, s_start, o_start))
+                self._append_if_valid(final, UserEvent(o.name, o_start, s_end))
+                o.start_time = s_end
+                p1 += 1
 
-        while p1 < len(self.schedule_lst):
-            s_event = self.schedule_lst[p1]
-            if s_event.start_time < s_event.end_time:
-                self.final_schedule.append(s_event)
+        return p1, p2
+
+    def _append_remaining(self, final, p1, p2):
+        """
+        Add any remaining schedules or overrides.
+        """
+        schedules, overrides = self.schedule_lst, self.override_lst
+        while p1 < len(schedules):
+            self._append_if_valid(final, schedules[p1])
             p1 += 1
-        
-        while p2 < len(self.override_lst):
-            o_event = self.override_lst[p2]
-            if o_event.start_time < o_event.end_time:
-                self.final_schedule.append(o_event)
+        while p2 < len(overrides):
+            self._append_if_valid(final, overrides[p2])
             p2 += 1
 
+    def override_schedule_queue(self):
+        """
+        Handles and calls the differnt functions for generating the schedule queue
+        """
+        self._truncate_events(self.schedule_lst)
+        self._truncate_events(self.override_lst)
+
+        final = self.final_schedule
+        p1, p2 = 0, 0
+
+        # Pre-processing
+        p2 = self._handle_pre_schedule_overrides(final)
+        p2 = self._handle_partial_overlap_before_first_schedule(final, p2)
+
+        # Core merging
+        p1, p2 = self._merge_main_schedule(final, p1, p2)
+
+        # Post-processing
+        self._append_remaining(final, p1, p2)
+
     def events_combiner(self):
-        output_lst = []
-        i = 1
-        prev_event = self.final_schedule[0] if len(self.final_schedule) >= 1 else None
-        while i < len(self.final_schedule):
-            curr_event = self.final_schedule[i]
-            if prev_event.name == curr_event.name:
-                prev_event.end_time = curr_event.end_time 
+        """
+        Combine consecutive events with the same name
+        E.g. [(A, 3pm, 5pm), (C, 5pm, 6pm), (C, 6pm, 7pm), (B, 7pm, 9pm)]
+        gets converted to -> [(A, 3pm, 5pm), (C, 5pm, 7pm), (B, 7pm, 9pm)]
+        """
+        if not self.final_schedule:
+            return []
+
+        merged = []
+        prev = self.final_schedule[0]
+
+        for curr in self.final_schedule[1:]:
+            if curr.name == prev.name:
+                prev.end_time = curr.end_time
             else:
-                output_lst.append(prev_event)
-                prev_event = curr_event
+                merged.append(prev)
+                prev = curr
 
-            i += 1
-
-        output_lst.append(prev_event)
-
-        return output_lst
-
-            
-
+        merged.append(prev)
+        return merged

@@ -9,6 +9,9 @@ class FileHandler:
         self.output_file = output_file
 
     def read_schedule_file(self):
+        """
+        Read schedule file and return a list of schedule events
+        """
         schedule_lst = []
         with open(self.schedule_file, 'r') as f:
             schedule_data = json.load(f)
@@ -35,6 +38,9 @@ class FileHandler:
         return schedule_lst
     
     def read_override_file(self):
+        """
+        Read override file and return a list of override events
+        """
         override_lst = []
         with open(self.override_file, 'r') as f:
             override_data = json.load(f)
@@ -51,6 +57,9 @@ class FileHandler:
         return override_lst
     
     def write_to_output_file(self, schedule_queue):
+        """
+        Write schedule to output json file
+        """
         output_data = []
         for schedule_event in schedule_queue:
             start_time = schedule_event.start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
@@ -62,6 +71,12 @@ class FileHandler:
             json.dump(output_data, f, indent=2)
     
     def _validate_input(self, name, start_time, end_time):
+        """
+        Validate input to make sure:
+        name -> string
+        start_time -> can be parsed as a valid datetime object
+        end_time -> can be parsed as a valid datetime object
+        """
         return name, start_time, end_time
     
         
