@@ -30,9 +30,8 @@ def read_stdin():
     engine = SchedulingEngine(schedule_lst, override_lst, start_time_dt, end_time_dt)
 
     engine.override_schedule_queue()
-    
 
-    final_schedule_queue = engine.final_schedule
+    final_schedule_queue = engine.events_combiner()
     file_handler.write_to_output_file(final_schedule_queue)
 
     # # You can parse the datetimes if you want:
