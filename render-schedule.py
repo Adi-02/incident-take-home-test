@@ -18,7 +18,6 @@ def read_stdin():
     start_time = args.from_time 
     end_time = args.until
 
-    # print(f"Schedule File: {schedule_file}, Overrides File: {overrides_file}, Start Time: {start_time}, End Time: {end_time}")
     output_file_name = "output.json"
     file_handler = FileHandler(schedule_file, overrides_file, output_file_name)
 
@@ -33,11 +32,6 @@ def read_stdin():
 
     final_schedule_queue = engine.events_combiner()
     file_handler.write_to_output_file(final_schedule_queue)
-
-    # # You can parse the datetimes if you want:
-    # start = datetime.fromisoformat(args.from_time.replace("Z", "+00:00"))
-    # end = datetime.fromisoformat(args.until.replace("Z", "+00:00"))
-    # print(f"Parsed start: {start}, end: {end}")
 
 if __name__ == "__main__":
     read_stdin()
