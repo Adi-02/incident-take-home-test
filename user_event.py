@@ -1,5 +1,7 @@
+from datetime import datetime
+
 class UserEvent:
-    def __init__(self, name, start_time, end_time):
+    def __init__(self, name : str, start_time : datetime, end_time : datetime) -> None:
         self.name = name 
         self.start_time = start_time
         self.end_time = end_time

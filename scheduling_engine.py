@@ -1,35 +1,36 @@
 from user_event import UserEvent
+from datetime import datetime
 
 class SchedulingEngine:
-    def __init__(self, schedule_lst, override_lst, schedule_start, schedule_end):
+    def __init__(self, schedule_lst : list[UserEvent], override_lst : list[UserEvent], schedule_start : datetime, schedule_end : datetime) -> None:
         self.schedule_lst = schedule_lst
         self.override_lst = override_lst
         self.schedule_start = schedule_start
         self.schedule_end = schedule_end
         self.final_schedule = []
 
-    def _truncate_event(self, event):
+    def _truncate_event(self, event : UserEvent) -> None:
         """
         Truncate an event's start and end time within the time frame given
         """
         event.start_time = max(event.start_time, self.schedule_start)
         event.end_time = min(event.end_time, self.schedule_end)
 
-    def _truncate_events(self, events):
+    def _truncate_events(self, events : list[UserEvent]) -> None:
         """
         Truncate all events within time frame
         """
         for event in events:
             self._truncate_event(event)
 
-    def _append_if_valid(self, event_list, event):
+    def _append_if_valid(self, event_list : list[UserEvent], event : UserEvent) -> None:
         """
         Ignore events if they have the same start and end time
         """
         if event.start_time < event.end_time:
             event_list.append(event)
 
-    def _handle_pre_schedule_overrides(self, final):
+    def _handle_pre_schedule_overrides(self, final : list[UserEvent]) -> int:
         """
         Add override tasks that start before the first scheduled task 
         """
@@ -40,7 +41,7 @@ class SchedulingEngine:
             p2 += 1
         return p2
 
-    def _handle_partial_overlap_before_first_schedule(self, final, p2):
+    def _handle_partial_overlap_before_first_schedule(self, final : list[UserEvent], p2 : int) -> int:
         """
         Handle an override that partially overlaps before the first scheduled task
         """
@@ -51,7 +52,7 @@ class SchedulingEngine:
             o.start_time = schedules[0].start_time
         return p2
 
-    def _merge_main_schedule(self, final, p1, p2):
+    def _merge_main_schedule(self, final : list[UserEvent], p1 : int, p2 : int) -> tuple[int,int]:
         """
         Merging schedules and overrides if and when they overlap
         """
@@ -86,7 +87,7 @@ class SchedulingEngine:
 
         return p1, p2
 
-    def _append_remaining(self, final, p1, p2):
+    def _append_remaining(self, final : list[UserEvent], p1 : int, p2 : int) -> None:
         """
         Add any remaining schedules or overrides.
         """
@@ -98,7 +99,7 @@ class SchedulingEngine:
             self._append_if_valid(final, overrides[p2])
             p2 += 1
 
-    def override_schedule_queue(self):
+    def override_schedule_queue(self) -> None:
         """
         Handles and calls the differnt functions for generating the schedule queue
         """
@@ -118,7 +119,7 @@ class SchedulingEngine:
         # Post-processing
         self._append_remaining(final, p1, p2)
 
-    def events_combiner(self):
+    def events_combiner(self) -> list[UserEvent]:
         """
         Combine consecutive events with the same name
         E.g. [(A, 3pm, 5pm), (C, 5pm, 6pm), (C, 6pm, 7pm), (B, 7pm, 9pm)]
