@@ -2,26 +2,10 @@ from user_event import UserEvent
 from datetime import datetime
 
 class SchedulingEngine:
-    def __init__(self, schedule_lst : list[UserEvent], override_lst : list[UserEvent], schedule_start : datetime, schedule_end : datetime) -> None:
+    def __init__(self, schedule_lst : list[UserEvent], override_lst : list[UserEvent]) -> None:
         self.schedule_lst = schedule_lst
         self.override_lst = override_lst
-        self.schedule_start = schedule_start
-        self.schedule_end = schedule_end
         self.final_schedule = []
-
-    def _truncate_event(self, event : UserEvent) -> None:
-        """
-        Truncate an event's start and end time within the time frame given
-        """
-        event.start_time = max(event.start_time, self.schedule_start)
-        event.end_time = min(event.end_time, self.schedule_end)
-
-    def _truncate_events(self, events : list[UserEvent]) -> None:
-        """
-        Truncate all events within time frame
-        """
-        for event in events:
-            self._truncate_event(event)
 
     def _append_if_valid(self, event_list : list[UserEvent], event : UserEvent) -> None:
         """
@@ -101,27 +85,24 @@ class SchedulingEngine:
 
     def override_schedule_queue(self) -> None:
         """
-        Handles and calls the differnt functions for generating the schedule queue
+        Handles the logic for generating the schedule queue
         """
-        self._truncate_events(self.schedule_lst)
-        self._truncate_events(self.override_lst)
-
         final = self.final_schedule
         p1, p2 = 0, 0
 
-        # Pre-processing
+        # Handle overrides that start just before or end between the first and second schedule
         p2 = self._handle_pre_schedule_overrides(final)
         p2 = self._handle_partial_overlap_before_first_schedule(final, p2)
 
-        # Core merging
+        # Handle overrides that happen in between schedules 
         p1, p2 = self._merge_main_schedule(final, p1, p2)
 
-        # Post-processing
+        # Remaining overrides and schedules get appended
         self._append_remaining(final, p1, p2)
 
     def events_combiner(self) -> list[UserEvent]:
         """
-        Combine consecutive events with the same name
+        Combine consecutive events with the same name (due partial events being created)
         E.g. [(A, 3pm, 5pm), (C, 5pm, 6pm), (C, 6pm, 7pm), (B, 7pm, 9pm)]
         gets converted to -> [(A, 3pm, 5pm), (C, 5pm, 7pm), (B, 7pm, 9pm)]
         """
