@@ -31,9 +31,44 @@ class SchedulingEngine:
         schedules, overrides = self.schedule_lst, self.override_lst
         if p2 < len(overrides) and overrides[p2].start_time < schedules[0].start_time:
             o = overrides[p2]
-            self._append_if_valid(final, UserEvent(o.name, o.start_time, schedules[0].start_time))
-            o.start_time = schedules[0].start_time
+            self._append_if_valid(final, o)
+            o.start_time = o.end_time
         return p2
+    
+    def _resolve_override_overlaps(self) -> None:
+        """
+        Adjust override_lst so no two overrides overlap.
+        If overlap occurs, the later override takes precedence,
+        and the earlier one is split into non-overlapping pieces.
+        """
+        overrides = sorted(self.override_lst, key=lambda e: e.start_time)
+        result = []
+
+        for o in overrides:
+            # Compare with previous overrides in result
+            i = 0
+            while i < len(result):
+                r = result[i]
+                if o.start_time < r.end_time and o.end_time > r.start_time:
+                    # Overlap detected
+                    if o.start_time > r.start_time:
+                        # Keep left non-overlapping segment
+                        result.insert(i, UserEvent(r.name, r.start_time, o.start_time))
+                        i += 1
+                    if o.end_time < r.end_time:
+                        # Keep right non-overlapping segment
+                        result.insert(i + 1, UserEvent(r.name, o.end_time, r.end_time))
+                    # Remove the overlapped event
+                    result.pop(i)
+                    # Do not increment i (recheck with next)
+                else:
+                    i += 1
+            result.append(o)
+
+        # Sort again for safety
+        result.sort(key=lambda e: e.start_time)
+        self.override_lst = result
+
 
     def _merge_main_schedule(self, final : list[UserEvent], p1 : int, p2 : int) -> tuple[int,int]:
         """
@@ -91,6 +126,9 @@ class SchedulingEngine:
 
         if len(self.schedule_lst) == 0 and len(self.override_lst) == 0:
             return
+        
+        # Resolves any event overlaps in the list of override events
+        self._resolve_override_overlaps()
         
         if len(self.schedule_lst) == 0 and len(self.override_lst) > 0:
             final = self.override_lst
