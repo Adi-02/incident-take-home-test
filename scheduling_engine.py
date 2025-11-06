@@ -82,12 +82,19 @@ class SchedulingEngine:
             self._append_if_valid(final, overrides[p2])
             p2 += 1
 
-    def override_schedule_queue(self) -> None:
+    def override_schedule_queue(self) -> list[UserEvent]:
         """
         Handles the logic for generating the schedule queue
         """
         final = self.final_schedule
         p1, p2 = 0, 0
+
+        if len(self.schedule_lst) == 0 and len(self.override_lst) == 0:
+            return
+        
+        if len(self.schedule_lst) == 0 and len(self.override_lst) > 0:
+            final = self.override_lst
+            return 
 
         # Handle overrides that start just before or end between the first and second schedule
         p2 = self._handle_pre_schedule_overrides(final)
@@ -98,6 +105,10 @@ class SchedulingEngine:
 
         # Remaining overrides and schedules get appended
         self._append_remaining(final, p1, p2)
+
+        # Combine the events
+        final_schedule_merged = self.events_combiner()
+        return final_schedule_merged
 
     def events_combiner(self) -> list[UserEvent]:
         """

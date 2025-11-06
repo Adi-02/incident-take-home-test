@@ -26,8 +26,9 @@ def read_stdin():
 
     # Scheduling Engine
     engine = SchedulingEngine(schedule_lst, override_lst)
-    engine.override_schedule_queue()
-    final_schedule_queue = engine.events_combiner()
+    # engine.override_schedule_queue()
+    # final_schedule_queue = engine.events_combiner()
+    final_schedule_queue = engine.override_schedule_queue()
 
     # Write to output json
     file_handler.write_to_output_file(final_schedule_queue)
