@@ -32,7 +32,7 @@ class SchedulingEngine:
         if p2 < len(overrides) and overrides[p2].start_time < schedules[0].start_time:
             o = overrides[p2]
             self._append_if_valid(final, o)
-            o.start_time = o.end_time
+            schedules[0].start_time = o.end_time
         return p2
     
     def _resolve_override_overlaps(self) -> None:
@@ -164,8 +164,9 @@ class SchedulingEngine:
             if curr.name == prev.name:
                 prev.end_time = curr.end_time
             else:
-                merged.append(prev)
+                if prev.start_time < prev.end_time:
+                    merged.append(prev)
                 prev = curr
-
-        merged.append(prev)
+        if prev.start_time < prev.end_time:
+            merged.append(prev)
         return merged

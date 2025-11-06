@@ -54,7 +54,7 @@ class TestSchedulingEngine(unittest.TestCase):
         final = []
         p2 = eng._handle_partial_overlap_before_first_schedule(final, 0)
         self.assertEqual(final[0].end_time, self.t(2025, 11, 10, 18))
-        self.assertEqual(o[0].start_time, self.t(2025, 11, 10, 18))
+        self.assertEqual(o[0].start_time, self.t(2025, 11, 10, 10))
         self.assertEqual(p2, 0)
 
     def test_merge_main_schedule_override_fully_inside_schedule(self):
@@ -127,7 +127,7 @@ class TestSchedulingEngine(unittest.TestCase):
         self.assertIn("charlie", users)
 
         # Find exact ordering (Charlie should override Alice's tail)
-        segments = [(e.name, e.start_time.hour, e.end_time.hour) for e in result]
+        segments = [(e.name, e.start_time, e.end_time) for e in result]
         print("\nSegments:", segments)
 
         # Verify Alice’s override ends when Charlie begins
