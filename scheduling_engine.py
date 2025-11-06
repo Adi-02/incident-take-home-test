@@ -1,5 +1,4 @@
 from user_event import UserEvent
-from datetime import datetime
 
 class SchedulingEngine:
     def __init__(self, schedule_lst : list[UserEvent], override_lst : list[UserEvent]) -> None:
