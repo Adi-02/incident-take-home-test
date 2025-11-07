@@ -65,7 +65,7 @@ class SchedulingEngine:
                     i += 1
             result.append(o)
 
-        # Sort again for safety
+        # Sort again to make sure chronological order is maintained
         result.sort(key=lambda e: e.start_time)
         self.override_lst = result
 
@@ -93,8 +93,7 @@ class SchedulingEngine:
             if s_start <= o_start < o_end <= s_end:
                 self._append_if_valid(final, UserEvent(s.name, s_start, o_start))  # before
                 self._append_if_valid(final, o)                                   # override
-                self._append_if_valid(final, UserEvent(s.name, o_end, s_end))     # after
-                p1 += 1
+                schedules[p1] = UserEvent(s.name, o_end, s_end)
                 p2 += 1
             else:
                 # Case 2: Override spans multiple schedules

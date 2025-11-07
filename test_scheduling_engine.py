@@ -68,8 +68,9 @@ class TestSchedulingEngine(unittest.TestCase):
         eng = SchedulingEngine(s, o)
         final = []
         eng._merge_main_schedule(final, 0, 0)
-        self.assertEqual(len(final), 3)
-        self.assertEqual([e.name for e in final], ["bob", "alice", "bob"])
+        self.assertEqual(len(final), 2)
+        self.assertEqual([e.name for e in final], ["bob", "alice"])
+
 
     def test_merge_main_schedule_skips_empty_events(self):
         """
@@ -174,6 +175,74 @@ class TestSchedulingEngine(unittest.TestCase):
         eng = SchedulingEngine([], [])
         merged = eng.events_combiner()
         self.assertEqual(merged, [])
+
+    def test_override_edge_cases_complex_overlaps(self):
+        """
+        Comprehensive overlap tests:
+        1. Nested overrides
+        2. Touching overrides
+        3. Partial overlaps
+        4. Multi-day chained overrides
+        """
+
+        t = self.t  # shorthand for cleaner timestamps
+
+        # --- Case 1: Nested overrides ---
+        # Bob [8–20], Alice [10–15], Charlie [12–13]
+        s = [UserEvent("bob", t(2025, 11, 8, 8), t(2025, 11, 8, 20))]
+        o = [
+            UserEvent("alice", t(2025, 11, 8, 10), t(2025, 11, 8, 15)),
+            UserEvent("charlie", t(2025, 11, 8, 12), t(2025, 11, 8, 13))
+        ]
+        eng = SchedulingEngine(s, o)
+        result = eng.override_schedule_queue()
+        users = [e.name for e in result]
+        # Expect sequence: bob → alice → charlie → alice → bob
+        expected_sequence = ["bob", "alice", "charlie", "alice", "bob"]
+        self.assertEqual(users, expected_sequence)
+
+        # --- Case 2: Touching overrides ---
+        # Alice [8–10], Bob [10–12]
+        s = [UserEvent("base", t(2025, 11, 8, 8), t(2025, 11, 8, 12))]
+        o = [
+            UserEvent("alice", t(2025, 11, 8, 8), t(2025, 11, 8, 10)),
+            UserEvent("bob", t(2025, 11, 8, 10), t(2025, 11, 8, 12))
+        ]
+        eng = SchedulingEngine(s, o)
+        result = eng.override_schedule_queue()
+        users = [e.name for e in result]
+        self.assertEqual(users, ["alice", "bob"])
+
+        # --- Case 3: Partial overlap ---
+        # Alice [8–12], Bob [10–14]
+        s = [UserEvent("alice", t(2025, 11, 8, 8), t(2025, 11, 8, 12))]
+        o = [UserEvent("bob", t(2025, 11, 8, 10), t(2025, 11, 8, 14))]
+        eng = SchedulingEngine(s, o)
+        result = eng.override_schedule_queue()
+        users = [e.name for e in result]
+        # Expect: alice [8–10], bob [10–14]
+        self.assertEqual(users, ["alice", "bob"])
+
+        # --- Case 4: Multi-day chained overrides ---
+        # Alice [7–14], Bob [9–11], Charlie [10–13]
+        s = [UserEvent("alice", t(2025, 11, 7, 7), t(2025, 11, 7, 14))]
+        o = [
+            UserEvent("bob", t(2025, 11, 7, 9), t(2025, 11, 7, 11)),
+            UserEvent("charlie", t(2025, 11, 7, 10), t(2025, 11, 7, 13))
+        ]
+        eng = SchedulingEngine(s, o)
+        result = eng.override_schedule_queue()
+        users = [e.name for e in result]
+        # Expect: alice [7–9], bob [9–10], charlie [10–13], alice [13–14]
+        expected_sequence = ["alice", "bob", "charlie", "alice"]
+        self.assertEqual(users, expected_sequence)
+
+        # Ensure no overlapping or zero-length events in all cases
+        for e in result:
+            self.assertLess(e.start_time, e.end_time)
+        for i in range(1, len(result)):
+            self.assertLessEqual(result[i - 1].end_time, result[i].start_time)
+
 
 
 if __name__ == "__main__":
