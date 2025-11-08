@@ -43,8 +43,6 @@ class FileHandler:
         while curr_start_time < end_time:
             curr_end_time = curr_start_time + delta
             name = users[user_idx % len(users)]
-
-            # Truncate to fit the range
             truncated_start = max(curr_start_time, start_time)
             truncated_end = min(curr_end_time, end_time)
             if truncated_start < truncated_end:
@@ -90,7 +88,7 @@ class FileHandler:
     
     def write_to_output_file(self, schedule_queue):
         """
-        Write schedule to output json file
+        Write schedule to output json file.
         """
         output_data = []
         for schedule_event in schedule_queue:
