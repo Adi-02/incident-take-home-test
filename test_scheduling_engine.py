@@ -1,5 +1,5 @@
 import unittest
-from datetime import datetime, timedelta
+from datetime import datetime
 from scheduling_engine import SchedulingEngine
 from user_event import UserEvent
 
