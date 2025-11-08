@@ -17,7 +17,7 @@ class SchedulingEngine:
 
     def _handle_pre_schedule_overrides(self, final : list[UserEvent]) -> int:
         """
-        Add override events that finish before the first scheduled event
+        Add override events that finish before the first scheduled event.
         E.g.
         s = [(A, 3pm, 5pm), (B, 6pm, 7pm)] 
         o = [(C, 2pm, 3pm)]
@@ -33,17 +33,21 @@ class SchedulingEngine:
     def _handle_partial_overlap_before_first_schedule(self, final : list[UserEvent], over_ptr : int) -> int:
         """
         Handle an override that partially overlaps before the first scheduled task.
-        The overriding event always takes precedence
+        The overriding event always takes precedence.
         E.g.
         s = [(A, 3pm, 5pm), (B, 6pm, 7pm)] 
         o = [(C, 2pm, 4pm)]
-        final = [(C, 2pm, 4pm), (A, 4pm, 5pm), (B, 6pm, 7pm)]
+        after _handle_partial_overlap_before_first_schedule:
+        final = [(C, 2pm, 4pm)] 
+        s = [(A, 4pm, 5pm), (B, 6pm, 7pm)] 
+        o = [] (not visible as pointer incremented)
         """
         schedules, overrides = self.schedule_lst, self.override_lst
         if over_ptr < len(overrides) and overrides[over_ptr].start_time < schedules[0].start_time:
             o = overrides[over_ptr]
             self._append_if_valid(final, o)
             schedules[0].start_time = o.end_time
+            over_ptr += 1
         return over_ptr
     
     def _resolve_override_overlaps(self) -> None:
@@ -87,8 +91,7 @@ class SchedulingEngine:
             i += 1
         
         if len(result) == 0:
-            self.override_lst = []
-            return
+            return []
         
         for o_ptr in range(1, len(overrides)):
             prev_o = result[-1]
@@ -119,7 +122,7 @@ class SchedulingEngine:
                 result.append(curr_o)
             
 
-        self.override_lst = result
+        return result
 
 
     def _merge_main_schedule(self, final : list[UserEvent], sched_ptr : int, over_ptr : int) -> tuple[int,int]:
@@ -221,17 +224,17 @@ class SchedulingEngine:
         sched_ptr, over_ptr = 0, 0
 
         if len(self.schedule_lst) == 0 and len(self.override_lst) == 0:
-            return
+            return []
         
         if len(self.schedule_lst) == 0 and len(self.override_lst) > 0:
-            final = self.override_lst
-            return 
+            self.final_schedule = self.override_lst
+            return self._events_combiner()
         
         if len(self.schedule_lst) > 0 and len(self.override_lst) == 0:
-            final = self.schedule_lst
-            return 
+            self.final_schedule = self.schedule_lst
+            return self._events_combiner()
         
-        self._resolve_override_overlaps()
+        self.override_lst = self._resolve_override_overlaps()
 
         over_ptr = self._handle_pre_schedule_overrides(final)
         over_ptr = self._handle_partial_overlap_before_first_schedule(final, over_ptr)
@@ -240,12 +243,12 @@ class SchedulingEngine:
 
         self._append_remaining(final, sched_ptr, over_ptr)
 
-        final_schedule_merged = self.events_combiner()
+        final_schedule_merged = self._events_combiner()
         return final_schedule_merged
 
-    def events_combiner(self) -> list[UserEvent]:
+    def _events_combiner(self) -> list[UserEvent]:
         """
-        Combine consecutive events with the same name (due partial events being created)
+        Combine consecutive events with the same name (due to partial events being created).
         E.g. 
         final = [(A, 3pm, 5pm), (C, 5pm, 6pm), (C, 6pm, 7pm), (B, 7pm, 9pm)]
         after events_combiner(): 

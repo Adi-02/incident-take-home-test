@@ -8,7 +8,7 @@ class UserEvent:
 
     def __repr__(self) -> str:
         """
-        Returns a clear string representation of the event for debugging
+        Returns a clear string representation of the event for debugging.
         """
         return f"UserEvent(name={self.name}, start_time={self.start_time}, end_time={self.end_time})"
     
