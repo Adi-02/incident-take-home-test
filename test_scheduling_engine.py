@@ -94,9 +94,9 @@ class TestSchedulingEngine(unittest.TestCase):
         s = [UserEvent("bob", self.t(2025, 11, 7, 17), self.t(2025, 11, 14, 17))]
         o = [UserEvent("alice", self.t(2025, 11, 15, 17), self.t(2025, 11, 16, 17))]
         eng = SchedulingEngine(s, o)
-        result = eng.override_schedule_queue()
-        users = [e.name for e in result]
-        self.assertEqual(users, ["bob", "alice"])
+        actual_outcome = eng.override_schedule_queue()
+        expected_outcome = [UserEvent("bob", self.t(2025, 11, 7, 17), self.t(2025, 11, 14, 17)), UserEvent("alice", self.t(2025, 11, 15, 17), self.t(2025, 11, 16, 17))]
+        self.assertListEqual(expected_outcome, actual_outcome)
 
     def test_override_schedule_queue_with_overlap(self):
         """

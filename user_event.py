@@ -11,3 +11,11 @@ class UserEvent:
         Returns a clear string representation of the event for debugging
         """
         return f"UserEvent(name={self.name}, start_time={self.start_time}, end_time={self.end_time})"
+    
+    def __eq__(self, other: object) -> bool:
+        """
+        Compare two UserEvent objects for equality based on name and time range.
+        """
+        if not isinstance(other, UserEvent):
+            return False
+        return (self.name == other.name and self.start_time == other.start_time and self.end_time == other.end_time)
