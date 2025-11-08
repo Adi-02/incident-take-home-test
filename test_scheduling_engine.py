@@ -8,11 +8,11 @@ class TestSchedulingEngine(unittest.TestCase):
     def setUp(self):
         self.empty_engine = SchedulingEngine([], [])
 
-    def _get_dt(self, y : int, m : int, d : int, h : int) -> datetime:
+    def _get_dt(self, y : int, m : int, d : int, h : int, minute : int = 0) -> datetime:
         """
         Get date time object 
         """
-        return datetime(y, m, d, h)
+        return datetime(y, m, d, h, minute)
 
     def test_append_if_valid_adds_valid_event(self):
         """
@@ -45,6 +45,51 @@ class TestSchedulingEngine(unittest.TestCase):
                     UserEvent("bob", self._get_dt(2025, 11, 10, 17), self._get_dt(2025, 11, 17, 17))]
         actual = self.empty_engine.override_schedule_queue()
         self.assertListEqual(expected, actual)
+
+    def test_override_between_two_schedules(self):
+        """
+        Case G1: Override sits cleanly in the gap between two schedules.
+        Expected: override appears chronologically between schedule 1 and 2.
+        """
+        self.empty_engine.schedule_lst = [UserEvent("bob", self._get_dt(2025, 11, 10, 13), self._get_dt(2025, 11, 10, 14)),
+                                          UserEvent("charlie", self._get_dt(2025, 11, 10, 17), self._get_dt(2025, 11, 10, 18))]
+        self.empty_engine.override_lst = [UserEvent("alice", self._get_dt(2025, 11, 10, 15), self._get_dt(2025, 11, 10, 16))]
+        expected = [UserEvent("bob", self._get_dt(2025, 11, 10, 13), self._get_dt(2025, 11, 10, 14)),
+                    UserEvent("alice", self._get_dt(2025, 11, 10, 15), self._get_dt(2025, 11, 10, 16)),
+                    UserEvent("charlie", self._get_dt(2025, 11, 10, 17), self._get_dt(2025, 11, 10, 18))]
+        actual = self.empty_engine.override_schedule_queue()
+        self.assertListEqual(expected, actual)
+
+    def test_multiple_overrides_in_gap(self):
+        """
+        Case G2: Multiple overrides fall entirely in the gap between schedules.
+        Expected: all overrides appear in chronological order before next schedule.
+        """
+        self.empty_engine.schedule_lst = [UserEvent("bob", self._get_dt(2025, 11, 10, 13), self._get_dt(2025, 11, 10, 14)),
+                                          UserEvent("charlie", self._get_dt(2025, 11, 10, 17), self._get_dt(2025, 11, 10, 18))]
+        self.empty_engine.override_lst = [UserEvent("alice", self._get_dt(2025, 11, 10, 14, 30), self._get_dt(2025, 11, 10, 15, 0)),
+                                          UserEvent("dan",   self._get_dt(2025, 11, 10, 15, 30), self._get_dt(2025, 11, 10, 16, 30))]
+        expected = [UserEvent("bob", self._get_dt(2025, 11, 10, 13), self._get_dt(2025, 11, 10, 14)),
+                    UserEvent("alice", self._get_dt(2025, 11, 10, 14, 30), self._get_dt(2025, 11, 10, 15, 0)),
+                    UserEvent("dan", self._get_dt(2025, 11, 10, 15, 30), self._get_dt(2025, 11, 10, 16, 30)),
+                    UserEvent("charlie", self._get_dt(2025, 11, 10, 17), self._get_dt(2025, 11, 10, 18))]
+        actual = self.empty_engine.override_schedule_queue()
+        self.assertListEqual(expected, actual)
+
+    def test_override_ends_exactly_at_next_schedule_start(self):
+        """
+        Case G3: Override ends exactly when next schedule starts.
+        Expected: override ends before schedule; both appear without overlap.
+        """
+        self.empty_engine.schedule_lst = [UserEvent("bob", self._get_dt(2025, 11, 10, 13), self._get_dt(2025, 11, 10, 14)),
+                                          UserEvent("charlie", self._get_dt(2025, 11, 10, 17), self._get_dt(2025, 11, 10, 18))]
+        self.empty_engine.override_lst = [UserEvent("alice", self._get_dt(2025, 11, 10, 15), self._get_dt(2025, 11, 10, 17))]
+        expected = [UserEvent("bob", self._get_dt(2025, 11, 10, 13), self._get_dt(2025, 11, 10, 14)),
+                    UserEvent("alice", self._get_dt(2025, 11, 10, 15), self._get_dt(2025, 11, 10, 17)),
+                    UserEvent("charlie", self._get_dt(2025, 11, 10, 17), self._get_dt(2025, 11, 10, 18))]
+        actual = self.empty_engine.override_schedule_queue()
+        self.assertListEqual(expected, actual)
+
 
 
     def test_handle_partial_overlap_before_first_schedule(self):

@@ -171,16 +171,12 @@ class SchedulingEngine:
                 continue
 
             # Case 1: No overlap
-            if s_end < o_start:
+            if s_end <= o_start:
                 self._append_if_valid(final, s)
                 sched_ptr += 1
+            elif o_end <= s_start:
                 self._append_if_valid(final, o)
                 over_ptr += 1
-            elif o_start < s_start and o_end < s_start:
-                self._append_if_valid(final, o)
-                over_ptr += 1
-                self._append_if_valid(final, s)
-                sched_ptr += 1
             # Case 2: Override fully inside schedule
             elif s_start <= o_start < o_end <= s_end:
                 self._append_if_valid(final, UserEvent(s.name, s_start, o_start)) 
