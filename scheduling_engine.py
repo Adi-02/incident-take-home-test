@@ -56,29 +56,29 @@ class SchedulingEngine:
         Later overrides take precedence — earlier ones are split or truncated
         so that no overlaps remain in the final override list.
 
-        Case 1: Override fully contains another override. 
+        Case 1: Ignore zero-duration overrides (start_time == end_time).
+        These are skipped and not added to the final list.
+        E.g.
+        o = [(C, 2pm, 3pm), (D, 4pm, 4pm)]
+        o_final = [(C, 2pm, 3pm)]
+
+        Case 2: Current override fully contains another override. 
         The earlier override is split into two non-overlapping segments.
         E.g.
         o = [(C, 2pm, 8pm), (D, 4pm, 6pm)]
         o_final = [(C, 2pm, 4pm), (D, 4pm, 6pm), (C, 6pm, 8pm)]
 
-        Case 2: Current override overlaps the end of a previous override.
+        Case 3: Current override's start time overlaps with the previous override.
         The previous override is truncated so it ends where the current override begins.
         E.g.
         o = [(C, 2pm, 5pm), (D, 4pm, 7pm)]
         o_final = [(C, 2pm, 4pm), (D, 4pm, 7pm)]
 
-        Case 3: No overlap between overrides.
+        Case 4: No overlap between overrides.
         Both overrides remain as-is.
         E.g.
         o = [(C, 2pm, 3pm), (D, 4pm, 5pm)]
         o_final = [(C, 2pm, 3pm), (D, 4pm, 5pm)]
-
-        Case 4: Ignore zero-duration overrides (start_time == end_time).
-        These are skipped and not added to the final list.
-        E.g.
-        o = [(C, 2pm, 3pm), (D, 4pm, 4pm)]
-        o_final = [(C, 2pm, 3pm)]
         """
         overrides = sorted(self.override_lst, key=lambda e: e.start_time)
         i = 0
@@ -171,11 +171,16 @@ class SchedulingEngine:
                 continue
 
             # Case 1: No overlap
-            if o_end < s_start or s_end < o_start:
+            if s_end < o_start:
                 self._append_if_valid(final, s)
                 sched_ptr += 1
                 self._append_if_valid(final, o)
                 over_ptr += 1
+            elif o_start < s_start and o_end < s_start:
+                self._append_if_valid(final, o)
+                over_ptr += 1
+                self._append_if_valid(final, s)
+                sched_ptr += 1
             # Case 2: Override fully inside schedule
             elif s_start <= o_start < o_end <= s_end:
                 self._append_if_valid(final, UserEvent(s.name, s_start, o_start)) 
