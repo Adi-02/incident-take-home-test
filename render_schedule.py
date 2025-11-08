@@ -1,7 +1,6 @@
 import argparse
 from file_handler import FileHandler
 from scheduling_engine import SchedulingEngine
-from datetime import datetime
 
 def read_stdin():
     # Parse input arguments
