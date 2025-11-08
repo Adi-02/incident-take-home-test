@@ -236,9 +236,6 @@ class SchedulingEngine:
         
         self.override_lst = self._resolve_override_overlaps()
 
-        print("Base schedule: ", self.schedule_lst)
-        print("Overrides: ", self.override_lst)
-
         over_ptr = self._handle_pre_schedule_overrides(final)
         over_ptr = self._handle_partial_overlap_before_first_schedule(final, over_ptr)
 
