@@ -101,10 +101,9 @@ class FileHandler:
     
     def _validate_input(self, name : str, start_time : str, end_time : str) -> tuple[str | None, datetime | None, datetime | None]:
         """
-        Validate input to make sure:
-        name -> string
-        start_time -> can be parsed as a valid datetime object
-        end_time -> can be parsed as a valid datetime object
+        Validate input fields.
+        Ensures name is a string and start_time, end_time are valid datetimes.
+        Returns None for any invalid field.
         """
         start_time_dt = self._convert_str_to_datetime(start_time)
         end_time_dt = self._convert_str_to_datetime(end_time)
@@ -114,7 +113,8 @@ class FileHandler:
     
     def _convert_str_to_datetime(self, date_time_str : datetime) -> datetime | None:
         """
-        Try convert str to datetime object
+        Convert a string to a datetime object.
+        Returns None if parsing fails.
         """
         try:
             new_time = datetime.strptime(date_time_str, "%Y-%m-%dT%H:%M:%SZ")
