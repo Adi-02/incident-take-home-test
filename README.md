@@ -13,4 +13,4 @@ To run scheduling engine tests:
 ```python -m unittest test_scheduling_engine```
 
 # Notes
-Link to Loom video: 
+Link to Loom video: https://www.loom.com/share/1e5e451df3bc4bcc90f4763c15ae5d4d
