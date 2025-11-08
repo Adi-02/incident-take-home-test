@@ -80,7 +80,7 @@ class SchedulingEngine:
         o = [(C, 2pm, 3pm), (D, 4pm, 5pm)]
         o_final = [(C, 2pm, 3pm), (D, 4pm, 5pm)]
         """
-        overrides = sorted(self.override_lst, key=lambda e: e.start_time)
+        overrides = self.override_lst
         i = 0
         result = []
         while i < len(overrides):
@@ -223,6 +223,9 @@ class SchedulingEngine:
         """
         final = self.final_schedule
         sched_ptr, over_ptr = 0, 0
+
+        self.schedule_lst.sort(key = lambda x: x.start_time)
+        self.override_lst.sort(key = lambda x: x.start_time)
 
         if len(self.schedule_lst) == 0 and len(self.override_lst) == 0:
             return []
