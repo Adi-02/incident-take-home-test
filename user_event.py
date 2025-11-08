@@ -24,4 +24,4 @@ class UserEvent:
         """
         Convert the event into a dictionary representation.
         """
-        return {"name" : self.name, "start_at" : self.start_time.strftime("%Y-%m-%dT%H:%M:%SZ"), "end_at" : self.end_time.strftime("%Y-%m-%dT%H:%M:%SZ")}
+        return {"user" : self.name, "start_at" : self.start_time.strftime("%Y-%m-%dT%H:%M:%SZ"), "end_at" : self.end_time.strftime("%Y-%m-%dT%H:%M:%SZ")}

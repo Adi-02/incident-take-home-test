@@ -86,7 +86,7 @@ class TestFileHandler(unittest.TestCase):
                     {"name": "bob", "start_at": self._get_dt(2025,11,14,17), "end_at": self._get_dt(2025,11,21,17)}]
 
         for i, d in enumerate(data):
-            self.assertEqual(d["name"], expected[i]["name"])
+            self.assertEqual(d["user"], expected[i]["name"])
 
 
 if __name__ == "__main__":

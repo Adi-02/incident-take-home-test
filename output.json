@@ -1,21 +1,21 @@
 [
   {
-    "name": "alice",
+    "user": "alice",
     "start_at": "2025-11-07T17:00:00Z",
     "end_at": "2025-11-10T17:00:00Z"
   },
   {
-    "name": "charlie",
+    "user": "charlie",
     "start_at": "2025-11-10T17:00:00Z",
     "end_at": "2025-11-10T22:00:00Z"
   },
   {
-    "name": "alice",
+    "user": "alice",
     "start_at": "2025-11-10T22:00:00Z",
     "end_at": "2025-11-15T09:00:00Z"
   },
   {
-    "name": "bob",
+    "user": "bob",
     "start_at": "2025-11-15T09:00:00Z",
     "end_at": "2025-11-21T17:00:00Z"
   }
