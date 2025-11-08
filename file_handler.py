@@ -76,8 +76,6 @@ class FileHandler:
             name, start_dt, end_dt = self._validate_input(name, start_str, end_str)
             if not (name and start_dt and end_dt):
                 continue
-
-            # Truncate to fit within global [start_time, end_time]
             truncated_start = max(start_dt, start_time)
             truncated_end = min(end_dt, end_time)
 
