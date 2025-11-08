@@ -94,10 +94,7 @@ class FileHandler:
         """
         output_data = []
         for schedule_event in schedule_queue:
-            start_time = schedule_event.start_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-            end_time = schedule_event.end_time.strftime("%Y-%m-%dT%H:%M:%SZ")
-            final_event = {"name" : schedule_event.name, "start_at" : start_time, "end_at" : end_time}
-            output_data.append(final_event)
+            output_data.append(schedule_event._to_dict())
 
         with open(self.output_file, "w") as f:
             json.dump(output_data, f, indent=2)
