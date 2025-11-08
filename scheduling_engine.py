@@ -110,7 +110,7 @@ class SchedulingEngine:
                     after_override = UserEvent(temp_name, curr_o.end_time, temp_end)
                     result.append(after_override)
             # Case 3: Current override extends beyond the previous override
-            elif prev_o.start_time <= curr_o.start_time and prev_o.end_time < curr_o.end_time:
+            elif prev_o.start_time <= curr_o.start_time < prev_o.end_time and prev_o.end_time < curr_o.end_time:
                 if prev_o.start_time < curr_o.start_time:
                     prev_o.end_time = curr_o.start_time
                     result.append(curr_o)
@@ -235,6 +235,9 @@ class SchedulingEngine:
             return self._events_combiner()
         
         self.override_lst = self._resolve_override_overlaps()
+
+        print("Base schedule: ", self.schedule_lst)
+        print("Overrides: ", self.override_lst)
 
         over_ptr = self._handle_pre_schedule_overrides(final)
         over_ptr = self._handle_partial_overlap_before_first_schedule(final, over_ptr)
