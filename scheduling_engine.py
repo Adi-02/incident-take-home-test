@@ -265,11 +265,10 @@ class SchedulingEngine:
         prev = self.final_schedule[0]
 
         for curr in self.final_schedule[1:]:
-            if curr.name == prev.name:
+            if curr.name == prev.name and prev.end_time == curr.start_time:
                 prev.end_time = curr.end_time
             else:
-                if prev.start_time < prev.end_time:
-                    merged.append(prev)
+                self._append_if_valid(merged, prev)
                 prev = curr
         if prev.start_time < prev.end_time:
             merged.append(prev)
