@@ -10,10 +10,10 @@ class FileHandler:
 
     def read_schedule_file(self, start_time_str: str, end_time_str: str) -> list[UserEvent]:
         """
-        Read and generate schedule events from schedule.json.
-        - Validates and parses start/end time strings.
-        - Generates repeated handover events.
-        - Truncates them within [start_time, end_time].
+        Read and generate schedule events from schedule.json:
+        1. Validates and parses start/end time strings.
+        2. Generates repeated handover events.
+        3. Truncates them within [start_time, end_time].
         """
         start_time = self._convert_str_to_datetime(start_time_str)
         end_time = self._convert_str_to_datetime(end_time_str)
@@ -57,9 +57,9 @@ class FileHandler:
 
     def read_override_file(self, start_time_str: str, end_time_str: str) -> list[UserEvent]:
         """
-        Read override events from override.json.
-        - Validates and parses start/end time strings.
-        - Truncates each override to within [start_time, end_time].
+        Read override events from override.json:
+        1. Validates and parses start/end time strings.
+        2. Truncates each override to within [start_time, end_time].
         """
         start_time = self._convert_str_to_datetime(start_time_str)
         end_time = self._convert_str_to_datetime(end_time_str)

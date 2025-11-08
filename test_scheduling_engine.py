@@ -8,7 +8,10 @@ class TestSchedulingEngine(unittest.TestCase):
     def setUp(self):
         self.empty_engine = SchedulingEngine([], [])
 
-    def _get_dt(self, y, m, d, h):
+    def _get_dt(self, y : int, m : int, d : int, h : int) -> datetime:
+        """
+        Get date time object 
+        """
         return datetime(y, m, d, h)
 
     def test_append_if_valid_adds_valid_event(self):
